@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reflex Agent</title>
+    <style>
+        .grid {
+            display: flex;
+            justify-content: center;
+            margin: 20px;
+        }
+        .cell {
+            width: 100px;
+            height: 100px;
+            margin: 5px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            font-size: 18px;
+        }
+        .clean {
+            background-color: green;
+        }
+        .dirty {
+            background-color: red;
+        }
+        .agent {
+            border: 3px solid black;
+        }
+        #log {
+            margin: 20px;
+            font-family: Arial, sans-serif;
+        }
+    </style>
+</head>
+<body>
+    <div class="grid">
+        <div id="cellA" class="cell">A</div>
+        <div id="cellB" class="cell">B</div>
+    </div>
+    <div id="log"></div>
+    <script>
+        function reflex_agent(location, state) {
+            if (state == "DIRTY") return "CLEAN";
+            else if (location == "A") return "RIGHT";
+            else if (location == "B") return "LEFT";
+        }
+
+        function updateGrid(states) {
+            var cellA = document.getElementById('cellA');
+            var cellB = document.getElementById('cellB');
+
+            cellA.className = 'cell ' + (states[1] == "CLEAN" ? "clean" : "dirty") + (states[0] == "A" ? " agent" : "");
+            cellB.className = 'cell ' + (states[2] == "CLEAN" ? "clean" : "dirty") + (states[0] == "B" ? " agent" : "");
+        }
+
+        function test(states) {
+            console.log("Current states: ", states); // Log current states
+            var location = states[0];
+            var state = location == "A" ? states[1] : states[2];
+            var action_result = reflex_agent(location, state);
+            console.log("Location: " + location + " | Action: " + action_result);
+
+            // Actualizar el estado basado en la acción
+            if (action_result == "CLEAN") {
+                if (location == "A") states[1] = "CLEAN";
+                else if (location == "B") states[2] = "CLEAN";
+            } else if (action_result == "RIGHT") states[0] = "B";
+            else if (action_result == "LEFT") states[0] = "A";
+
+            // Actualizar la visualización de la matriz
+            updateGrid(states);
+
+            // Registrar el estado actual
+            var currentState = states.join(",");
+            if (!visitedStates.has(currentState)) {
+                visitedStates.add(currentState);
+                document.getElementById("log").innerHTML += "<br>New state visited: ".concat(currentState);
+                console.log("New state visited: ", currentState);
+            }
+
+            // Verificar si todos los estados han sido visitados
+            if (visitedStates.size === 8) {
+                var endTime = new Date().getTime();
+                var timeTaken = (endTime - startTime) / 1000; // Tiempo en segundos
+                document.getElementById("log").innerHTML += "<br>All states have been visited. Stopping.";
+                document.getElementById("log").innerHTML += "<br>Time taken: " + timeTaken + " seconds.";
+                console.log("All states visited. Stopping.");
+                return; // Detener el programa
+            }
+
+            // Ensuciar aleatoriamente las habitaciones, permitiendo todos los estados posibles
+            states[1] = Math.random() < 0.5 ? "DIRTY" : "CLEAN";
+            states[2] = Math.random() < 0.5 ? "DIRTY" : "CLEAN";
+
+            setTimeout(function () { test(states); }, 500); // Continuar con cambios
+        }
+
+        var states = ["A", "DIRTY", "DIRTY"];
+        var visitedStates = new Set();
+        var startTime = new Date().getTime();
+        updateGrid(states); // Inicializar la visualización
+        test(states);
+    </script>
+</body>
+</html>
